@@ -109,26 +109,6 @@ if skipNZBChecks or 'NZBOP_SCRIPTDIR' in os.environ and not os.environ['NZBOP_VE
             accessed = dates['accessed']
         )
 
-    # Get all the files we will need to process and the stream details.
-    files_to_process = {}
-    files_checked = 0
-    print ("[INFO] Checking directory:", process_directory)
-    for dir_path, dir_names, file_names in os.walk(process_directory):
-        for file in file_names:
-            file_path, file_name, file_extension = getFilePathinfo(file)
-            fullfile_path=os.path.join(dir_path, file)
-            if file_extension in extensionsToProcess:
-                #print ("[INFO] Checking file:", file)
-                files_checked += 1
-                # Get info with ffprobe
-                sub_data = getSubStreams(fullfile_path)
-                for stream in sub_data:
-                    if stream['codec_name'] in codecToConvert or stream['codec_name'] in codecsToRemove:
-                        files_to_process[fullfile_path] = sub_data
-
-    print ("[INFO] Checked " + str(files_checked) + " files")
-    print ("[INFO] Found", len(files_to_process), "files to process.")
-
     # Helper function to process subs with ffmpeg, returns new converted file or
     # False if it failed.
     def processSubs(file, subsToKeep):
@@ -152,7 +132,6 @@ if skipNZBChecks or 'NZBOP_SCRIPTDIR' in os.environ and not os.environ['NZBOP_VE
             video = mkv['v']
             audio = mkv['a']
             subs = []
-            pprint (subsToKeep)
             if len(subsToKeep) > 0:
                 for subID in subsToKeep:
                     subs.append(mkv['s:' + str(subID)])
@@ -182,6 +161,24 @@ if skipNZBChecks or 'NZBOP_SCRIPTDIR' in os.environ and not os.environ['NZBOP_VE
         else:
             print ("[INFO] Processed file:", file)
             return new_file
+
+    # Get all the files we will need to process and the stream details.
+    files_to_process = {}
+    files_checked = 0
+    print ("[INFO] Checking directory:", process_directory)
+    for dir_path, dir_names, file_names in os.walk(process_directory):
+        for file in file_names:
+            file_path, file_name, file_extension = getFilePathinfo(file)
+            fullfile_path=os.path.join(dir_path, file)
+            if file_extension in extensionsToProcess:
+                files_checked += 1
+                # Get info with ffprobe
+                sub_data = getSubStreams(fullfile_path)
+                for stream in sub_data:
+                    if stream['codec_name'] in codecToConvert or stream['codec_name'] in codecsToRemove:
+                        files_to_process[fullfile_path] = sub_data
+    print ("[INFO] Checked " + str(files_checked) + " files")
+    print ("[INFO] Found", len(files_to_process), "files to process.")
 
     # Process files and continue on failure, while keeping track of one or more failures.
     failed = False
