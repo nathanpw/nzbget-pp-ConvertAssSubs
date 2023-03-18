@@ -63,6 +63,7 @@ if skipNZBChecks or 'NZBOP_SCRIPTDIR' in os.environ and not os.environ['NZBOP_VE
     # TODO: Make these configurable options and test?
     codecsToRemove = []
     codecsToRemove.append("dvb_subtitle")
+    codecsToRemove.append("dvd_subtitle")
     codecsToRemove.append("hdmv_pgs_subtitle")
 
     # Helper function to get file path, name, and extension
@@ -190,6 +191,8 @@ if skipNZBChecks or 'NZBOP_SCRIPTDIR' in os.environ and not os.environ['NZBOP_VE
             if stream['codec_name'] not in codecsToRemove:
                 subsToKeep.append(str(subID))
             subID += 1
+        print("[INFO] Processing file:", file)
+        new_file = False
         # Start ffmpeg.
         new_file = processSubs(file, subsToKeep)
         # If the new file doesn't exist mark a failure.
